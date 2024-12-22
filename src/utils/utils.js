@@ -2,7 +2,18 @@ const path = require("path");
 const parse = require("url-parse");
 const chalk = require("chalk");
 
-const [, , openApi, accessToken, htmlPath] = process.argv;
+// Replace command line arguments with environment variables
+const openApi = process.env.API_HOST;
+const accessToken = process.env.ACCESS_TOKEN;
+const htmlPath = process.env.FLOMO_HTML_PATH;
+
+// Add validation
+if (!openApi || !accessToken || !htmlPath) {
+  console.error(chalk.red('Error: Required environment variables are missing.'));
+  console.error(chalk.yellow('Please make sure you have set the following in your .env file:'));
+  console.error(chalk.yellow('API_HOST, ACCESS_TOKEN, FLOMO_HTML_PATH'));
+  process.exit(1);
+}
 
 exports.openApi = openApi;
 exports.htmlPath = htmlPath;

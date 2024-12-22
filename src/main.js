@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require("fs-extra");
 const cheerio = require("cheerio");
 var TurndownService = require("turndown");
@@ -37,8 +38,14 @@ for (const memo of memos) {
   const tagReg = /#(\S*)/g;
   const tagMatch = content.match(tagReg);
   if (tagMatch) {
-    tags = tagMatch.map((item) => item.replace("#", "")).filter(tag => !!tag);
+    tags = tagMatch.map((item) => item.replace("#", "")).filter((tag) => !!tag);
   }
+
+  // Replace flomoapp.com URLs with [MEMO =>](url) format
+  const flomoUrlRegex = /https?:\/\/(?:[\w-]+\.)*flomoapp\.com[^\s)]+/g;
+  content = content.replace(flomoUrlRegex, (url) => {
+    return `[MEMO =>](${url})`;
+  });
 
   $(memo)
     .find(".files img")
@@ -75,7 +82,7 @@ async function uploadFileHandler() {
     }
 
     await mergePromise(uploadFilePromiseArr).then((res) => {
-      memo.resources = [...memo.resources || [], ...res];
+      memo.resources = [...(memo.resources || []), ...res];
     });
   }
 
@@ -87,14 +94,12 @@ async function sendMemoHandler() {
 
   fs.writeJSONSync("./memo.json", memoArr);
 
-  
   for (const memo of memoArr) {
     let content = memo.content;
 
     memo.tags.forEach((tag) => {
       content += ` #${tag}`;
-    })
-
+    });
 
     sendMemoPromiseArr.unshift(async () => {
       try {
@@ -103,9 +108,6 @@ async function sendMemoHandler() {
           createdTs: new Date(memo.time).getTime() / 1000,
         }).then(async (res) => {
           sendedMemoNames.push(res?.data?.name || res?.data?.data?.name);
-
-          await setMemoResources(res?.data?.name, memo.resources);
-
           fs.writeJSONSync("./sendedIds.json", sendedMemoNames);
         });
       } catch (error) {

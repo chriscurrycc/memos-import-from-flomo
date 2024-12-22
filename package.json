@@ -4,6 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "parse": "node src/parse.js",
+    "upload-resources": "node src/upload-resources.js",
+    "upload-memos": "node src/upload-memos.js",
+    "start": "npm run parse && npm run upload-resources && npm run upload-memos",
+    "optimize-memos": "node src/optimize-memos.js",
     "run": "node ./src/weixin.js http://localhost:5230/api/memo?openId=8deb3079-055b-48a1-a1e4-499ce493fa0c ./weixin.txt",
     "lint": "eslint ."
   },
@@ -18,7 +23,10 @@
     "fs-extra": "^11.1.0",
     "mime": "^3.0.0",
     "turndown": "^7.1.2",
-    "url-parse": "^1.5.10"
+    "url-parse": "^1.5.10",
+    "dotenv": "^16.4.5",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",

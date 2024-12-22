@@ -134,3 +134,7 @@ flomo
 
 sendedIds.json
 memo.json
+note.md
+file-map.json
+memo.json.backup*
+memo.http
