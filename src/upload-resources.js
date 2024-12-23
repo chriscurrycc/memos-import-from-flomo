@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const fs = require("fs-extra");
 const chalk = require("chalk");
 const path = require("path");
@@ -6,13 +6,6 @@ const mime = require("mime");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const { getFilePath, mergePromise } = require("./utils/utils");
-
-// Load existing file map or create new one
-let fileMap = {};
-const FILE_MAP_PATH = './file-map.json';
-if (fs.existsSync(FILE_MAP_PATH)) {
-  fileMap = fs.readJSONSync(FILE_MAP_PATH);
-}
 
 // Initialize S3 client for R2
 const S3 = new S3Client({
@@ -31,10 +24,10 @@ async function uploadToR2(filePath, originalPath) {
 
   const fileContent = await fs.readFile(filePath);
   const fileName = path.basename(filePath);
-  const mimeType = mime.getType(filePath) || 'application/octet-stream';
-  
+  const mimeType = mime.getType(filePath) || "application/octet-stream";
+
   const uniqueFileName = fileName;
-  
+
   const uploadParams = {
     Bucket: process.env.R2_BUCKET_NAME,
     Key: uniqueFileName,
@@ -43,35 +36,31 @@ async function uploadToR2(filePath, originalPath) {
   };
 
   try {
-    console.log(chalk.blue('Starting upload...'));
-    console.log(chalk.gray('File:', fileName));
-    console.log(chalk.gray('Content-Type:', mimeType));
-    
+    console.log(chalk.blue("Starting upload..."));
+    console.log(chalk.gray("File:", fileName));
+    console.log(chalk.gray("Content-Type:", mimeType));
+
     await S3.send(new PutObjectCommand(uploadParams));
     const publicUrl = `${process.env.R2_PUBLIC_URL}/${uniqueFileName}`;
-    
-    // Add to file map
-    fileMap[originalPath] = publicUrl;
-    await fs.writeJSON(FILE_MAP_PATH, fileMap, { spaces: 2 });
-    
-    console.log(chalk.green('\nUpload successful!'));
-    console.log(chalk.blue('Public URL:', publicUrl));
-    console.log(chalk.gray('Mapped:', originalPath, '→', publicUrl));
+
+    console.log(chalk.green("\nUpload successful!"));
+    console.log(chalk.blue("Public URL:", publicUrl));
+    console.log(chalk.gray("Mapped:", originalPath, "→", publicUrl));
     return publicUrl;
   } catch (err) {
-    console.error(chalk.red('\nUpload failed:', err.message));
+    console.error(chalk.red("\nUpload failed:", err.message));
     throw err;
   }
 }
 
 async function uploadFileHandler() {
   const memoArr = fs.readJSONSync("./memo.json");
-  
+
   console.log(chalk.green("======================= Upload Resources ======================="));
   for (const memo of memoArr) {
     memoArr.resourceList = memoArr.resourceList || [];
     const uploadFilePromiseArr = [];
-    
+
     if (memo.files.length) {
       for (const filePath of memo.files) {
         const fullPath = getFilePath(filePath);
@@ -89,15 +78,14 @@ async function uploadFileHandler() {
     }
 
     const uploadedUrls = await mergePromise(uploadFilePromiseArr);
-    memo.resources = [...(memo.resources || []), ...uploadedUrls.filter(url => url)];
+    memo.resources = [...(memo.resources || []), ...uploadedUrls.filter((url) => url)];
   }
 
   fs.writeJSONSync("./memo.json", memoArr);
   console.log(chalk.green("======================= Upload Resources Complete ======================="));
-  console.log(chalk.blue(`File mapping saved to ${FILE_MAP_PATH}`));
 }
 
-uploadFileHandler().catch(error => {
+uploadFileHandler().catch((error) => {
   console.error(chalk.red("Upload failed:", error));
   process.exit(1);
-}); 
+});

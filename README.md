@@ -14,7 +14,8 @@
 ## 使用前准备
 
 1. 从 Flomo 导出数据（HTML 格式）
-2. 配置环境变量（创建 .env 文件）：
+2. 将 HTML 文件保存到 flomo 目录下（html 重命名为 index.html）
+3. 配置环境变量（创建 .env 文件）：
 
 ```env
 API_HOST=your_memos_host
@@ -35,6 +36,12 @@ pnpm install
 
 ## 使用方法
 
+```bash
+npm run start
+```
+
+**你也可以手动执行每个步骤，以便查看每个步骤的输出结果。**
+
 ### 1. 解析 Flomo HTML 文件
 
 ```bash
@@ -47,20 +54,7 @@ npm run parse
 - 提取笔记内容、时间、标签和图片信息
 - 生成 memo.json 文件
 
-### 2. 优化内容格式（可选）
-
-```bash
-npm run optimize-memos
-```
-
-这一步会：
-
-- 清理多余空格
-- 规范化换行符（最多保留两个连续换行）
-- 自动创建备份文件
-- 优化后的内容会更新到 memo.json
-
-### 3. 上传资源文件
+### 2. 上传资源文件
 
 ```bash
 npm run upload-resources
@@ -69,10 +63,9 @@ npm run upload-resources
 这一步会：
 
 - 上传笔记中的图片到 Cloudflare R2
-- 生成 file-map.json 记录文件映射关系
 - 更新 memo.json 中的资源链接
 
-### 4. 上传笔记
+### 3. 上传笔记
 
 ```bash
 npm run upload-memos
@@ -85,25 +78,21 @@ npm run upload-memos
 - 添加 #FlomoMigration 标签
 - 记录已上传的笔记 ID
 
-### 5. 一键执行所有步骤
-
-```bash
-npm run start
-```
+> **Note**
+>
+> 导出的笔记会丢失关联关系。如果笔记中引用了其他笔记，会添加 `MEMO =>` 链接，这个链接会指向你 flomo 笔记的地址，请手动查看笔记，并添加新的笔记关联关系。此外，还会添加 `#FlomoMigration/NeedFix` 标签，方便查找。
 
 ## 文件说明
 
 - `memo.json`: 解析后的笔记数据
-- `file-map.json`: 文件映射关系
 - `sendedIds.json`: 已上传笔记的 ID 记录
 
 ## 注意事项
 
 1. 确保 .env 文件配置正确
-2. 上传前建议先使用 optimize-memos 优化内容格式
-3. 图片资源上传到 R2 后会保持原有文件名
-4. 支持断点续传，已上传的内容会记录在 sendedIds.json 中
-5. 每次上传笔记会有 1 秒的间隔，避免请求过于频繁
+2. 图片资源上传到 R2 后会保持原有文件名
+3. 支持断点续传，已上传的内容会记录在 sendedIds.json 中
+4. 每次上传笔记会有 1 秒的间隔，避免请求过于频繁
 
 ## 环境变量说明
 
@@ -115,14 +104,6 @@ npm run start
 - `R2_SECRET_ACCESS_KEY`: R2 访问密钥
 - `R2_BUCKET_NAME`: R2 存储桶名称
 - `R2_PUBLIC_URL`: R2 公共访问地址
-
-## 开发相关
-
-- 使用 ESLint 进行代码规范检查：
-
-```bash
-npm run lint
-```
 
 ## 许可证
 

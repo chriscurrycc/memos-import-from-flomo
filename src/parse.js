@@ -1,7 +1,7 @@
-require('dotenv').config();
+require("dotenv").config();
 const fs = require("fs-extra");
 const cheerio = require("cheerio");
-var TurndownService = require("turndown");
+const { NodeHtmlMarkdown } = require("node-html-markdown");
 
 const { htmlPath } = require("./utils/utils");
 
@@ -24,8 +24,8 @@ for (const memo of memos) {
     .find(".content")
     .each((index, html) => {
       let text = $(html).html();
-      var turndownService = new TurndownService();
-      text = turndownService.turndown(text);
+      const nhm = new NodeHtmlMarkdown();
+      text = nhm.translate(text);
       content += `${content ? "\n" : ""}${text}`;
     }, "");
 
@@ -38,9 +38,16 @@ for (const memo of memos) {
 
   // Replace flomoapp.com URLs
   const flomoUrlRegex = /https?:\/\/(?:[\w-]+\.)*flomoapp\.com[^\s)]+/g;
+  let hasFlomoUrl = false;
   content = content.replace(flomoUrlRegex, (url) => {
-    return `[MEMO =>](${url})`;
+    hasFlomoUrl = true;
+    // 修复 URL 中的转义下划线
+    const fixedUrl = url.replace(/\\_/g, '_');
+    return `[MEMO =>](${fixedUrl})`;
   });
+
+  // Add FlomoMigration tag
+  content += hasFlomoUrl ? "\n#FlomoMigration/NeedFix" : "\n#FlomoMigration";
 
   $(memo)
     .find(".files img")
@@ -62,4 +69,4 @@ memoArr.sort((a, b) => {
 });
 
 fs.writeJSONSync("./memo.json", memoArr);
-console.log("Parse completed. Data saved to memo.json"); 
+console.log("Parse completed. Data saved to memo.json");

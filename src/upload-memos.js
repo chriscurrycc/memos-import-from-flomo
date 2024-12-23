@@ -20,9 +20,6 @@ async function sendMemoHandler() {
   for (const memo of memoArr) {
     let content = memo.content;
 
-    // Add FlomoMigration tag
-    content += "\n#FlomoMigration";
-
     // Add resources as markdown images if they exist
     if (memo.resources && memo.resources.length > 0) {
       content += "\n\n"; // Add blank line before resources
